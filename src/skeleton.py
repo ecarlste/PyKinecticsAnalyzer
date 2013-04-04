@@ -11,6 +11,18 @@ class Skeleton:
 
 class Joint:
     def __init__(self):
-        self.transform_parent = mat4(1.0)
-        self.transform = mat4(1.0)
-        self.children = []
+        self._transform_parent = mat4()
+        self._transform = mat4()
+        self._children = []
+
+    def set_transform_parent(self, transform_matrix):
+        assert isinstance(transform_matrix, mat4)
+        self._transform_parent = transform_matrix
+
+    def set_transform(self, transform_matrix):
+        assert isinstance(transform_matrix, mat4)
+        self._transform = transform_matrix
+
+    def add_child(self, child):
+        assert isinstance(child, Joint)
+        self._children.append(child)
