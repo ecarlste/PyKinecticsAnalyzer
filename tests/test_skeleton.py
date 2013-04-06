@@ -1,13 +1,18 @@
 __author__ = 'Erik S Carlsten'
 
 
+from cgkit.bvhimport import BVHReader
 from unittest import TestCase
 
-from src.skeleton import Joint, Skeleton
+from src.skeleton import Skeleton
 
 
 class TestSkeleton(TestCase):
-    pass
+    def test_skeleton_constructor(self):
+        reader = BVHReader('test_bvh_data.bvh')
+        reader.read()
+        skeleton = Skeleton(reader, 3)
+        assert isinstance(skeleton, Skeleton)
 
 
 class TestJoint(TestCase):
