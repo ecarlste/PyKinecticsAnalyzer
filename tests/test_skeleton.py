@@ -11,7 +11,7 @@ class TestSkeleton(TestCase):
     def test_skeleton_constructor(self):
         reader = BVHReader('test_bvh_data.bvh')
         reader.read()
-        skeleton = Skeleton(reader, 3)
+        skeleton = Skeleton(reader, 2)
         assert isinstance(skeleton, Skeleton)
 
 
