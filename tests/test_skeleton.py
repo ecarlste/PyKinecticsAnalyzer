@@ -3,6 +3,7 @@ from cgkit.bvhimport import BVHReader
 from unittest import TestCase
 
 from src.skeleton import Skeleton
+from testUtility import TestUtility
 
 __author__ = 'Erik S Carlsten'
 
@@ -17,6 +18,10 @@ class TestSkeleton(TestCase):
     def setUp(self):
         self.skeleton = Skeleton(self._reader, 2)
 
+    def test_root_name(self):
+        name = 'Hips'
+        self.assertEqual(self.skeleton.root.name, name)
+
     def test_root_transform(self):
         transform = mat4(
             0, 1, 0, 0,
@@ -25,19 +30,7 @@ class TestSkeleton(TestCase):
             0, 0, 0, 1
         )
 
-        self.assertAlmostEqual_mat4(transform, self.skeleton.root.transform, 12)
-
-    def assertAlmostEqual_mat4(self, first, second, places=7):
-        difference = second - first
-        difference_list = difference.toList()
-
-        total_difference = 0
-        for item in difference_list:
-            total_difference += abs(item)
-
-        total_difference = round(total_difference, places)
-
-        self.assertEquals(total_difference, 0)
+        TestUtility().assertAlmostEqual_mat4(transform, self.skeleton.root.transform, 12)
 
 
 class TestJoint(TestCase):
