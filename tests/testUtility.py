@@ -12,4 +12,4 @@ class TestUtility:
 
         total_difference = round(total_difference, places)
 
-        assert total_difference == 1, "first != second: using places=%d" % places
+        assert total_difference == 0, "first != second: using places=%d" % places
