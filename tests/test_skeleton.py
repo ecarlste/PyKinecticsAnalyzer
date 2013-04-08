@@ -18,8 +18,11 @@ class TestSkeleton(TestCase):
     def setUp(self):
         self._skeleton = Skeleton(self._reader, 2)
 
-    def test_root_name(self):
+    def test_frame_number(self):
+        frame_number = 2
+        self.assertEqual(self._skeleton._frame_number, frame_number)
 
+    def test_root_name(self):
         name = 'Hips'
         self.assertEqual(self._skeleton.root.name, name)
 
@@ -49,6 +52,48 @@ class TestSkeleton(TestCase):
 
         TestUtility().assertAlmostEqual_mat4(transform, self._skeleton.root.transform, 12)
 
+    def test_add_children_no_children(self):
+        joint = Joint()
+        children = []
+        self._skeleton.add_children(joint, children)
+        self.assertEqual(len(joint.children), 0)
+
+    def test_add_children_multiple_children_len(self):
+        self.assertEqual(len(self._skeleton.root.children), 3)
+
+    def test_add_children_multiple_children_parent_transforms(self):
+        expected_transforms = [
+            self._skeleton.root.transform,
+            self._skeleton.root.transform,
+            self._skeleton.root.transform
+        ]
+        actual_transforms = [
+            self._skeleton.root.children[0].transform_parent,
+            self._skeleton.root.children[1].transform_parent,
+            self._skeleton.root.children[2].transform_parent
+        ]
+        self.assertEqual(actual_transforms, expected_transforms)
+
+    def test_add_children_parent_transform_nested(self):
+        expected_transform = self._skeleton.root.children[0].transform
+        actual_transform = self._skeleton.root.children[0].children[0].transform_parent
+        self.assertEqual(actual_transform, expected_transform)
+
+    def test_add_children_name_end_site(self):
+        name = 'End Site'
+        joint = self._skeleton.root.children[1].children[0]
+        self.assertEqual(joint.name, name)
+
+    def test_add_children_transform_nested(self):
+        expected_transform = mat4(
+            0, 0, 1, 0,
+            1, 0, 0, 0,
+            0, 1, 0, -3,
+            0, 0, 0, 1
+        )
+        actual_transform = self._skeleton.root.children[1].children[0].transform
+        TestUtility().assertAlmostEqual_mat4(actual_transform, expected_transform)
+
 
 class TestJoint(TestCase):
     @classmethod
@@ -77,5 +122,3 @@ class TestJoint(TestCase):
     def test_constructor_children_is_empty(self):
         joint = Joint()
         self.assertEqual(len(joint.children), 0)
-
-    

@@ -8,6 +8,7 @@ __author__ = 'Erik S Carlsten'
 
 class Skeleton:
     def __init__(self, bvh_reader, frame_number):
+        self._frame_number = frame_number
         self.root = Joint(bvh_reader.root.name)
         self.root.transform_parent = mat4().identity()
 
@@ -25,10 +26,9 @@ class Skeleton:
 
         self.root.build_transform_matrix(translation, rotation)
 
-        Skeleton.add_children(self.root, bvh_reader.root.children, frame_number)
+        self.add_children(self.root, bvh_reader.root.children)
 
-    @staticmethod
-    def add_children(parent, children, frame_number):
+    def add_children(self, parent, children):
         for child in children:
             new_child = Joint(child.name)
             new_child.transform_parent = mat4(parent.transform)
@@ -43,14 +43,14 @@ class Skeleton:
                 rotation = {'x': 0, 'y': 0, 'z': 0}
             else:
                 rotation = {
-                    'x': child.vtx.values[frame_number].v * pi / 180,
-                    'y': child.vty.values[frame_number].v * pi / 180,
-                    'z': child.vtz.values[frame_number].v * pi / 180,
+                    'x': child.vtx.values[self._frame_number].v * pi / 180,
+                    'y': child.vty.values[self._frame_number].v * pi / 180,
+                    'z': child.vtz.values[self._frame_number].v * pi / 180,
                 }
 
             new_child.build_transform_matrix(translation, rotation)
             parent.children.append(new_child)
-            Skeleton.add_children(new_child, child.children, frame_number)
+            self.add_children(new_child, child.children)
 
 
 class Joint:
