@@ -24,21 +24,21 @@ class TestSkeleton(TestCase):
 
     def test_root_name(self):
         name = 'Hips'
-        self.assertEqual(self._skeleton.root.name, name)
+        self.assertEqual(self._skeleton._root.name, name)
 
     def test_root_transform_parent(self):
         transform_parent = mat4().identity()
-        self.assertEqual(self._skeleton.root.transform_parent, transform_parent)
+        self.assertEqual(self._skeleton._root.transform_parent, transform_parent)
 
     def test_root_children_size(self):
-        self.assertEqual(len(self._skeleton.root.children), 3)
+        self.assertEqual(len(self._skeleton._root.children), 3)
 
     def test_root_children_names(self):
         names = ['Spine1', 'LeftUpLeg', 'RightUpLeg']
         children_names = [
-            self._skeleton.root.children[0].name,
-            self._skeleton.root.children[1].name,
-            self._skeleton.root.children[2].name,
+            self._skeleton._root.children[0].name,
+            self._skeleton._root.children[1].name,
+            self._skeleton._root.children[2].name,
         ]
         self.assertEqual(children_names, names)
 
@@ -50,7 +50,7 @@ class TestSkeleton(TestCase):
             0, 0, 0, 1
         )
 
-        TestUtility().assertAlmostEqual_mat4(transform, self._skeleton.root.transform, 12)
+        TestUtility().assertAlmostEqual_mat4(transform, self._skeleton._root.transform, 12)
 
     def test_add_children_no_children(self):
         joint = Joint()
@@ -59,29 +59,29 @@ class TestSkeleton(TestCase):
         self.assertEqual(len(joint.children), 0)
 
     def test_add_children_multiple_children_len(self):
-        self.assertEqual(len(self._skeleton.root.children), 3)
+        self.assertEqual(len(self._skeleton._root.children), 3)
 
     def test_add_children_multiple_children_parent_transforms(self):
         expected_transforms = [
-            self._skeleton.root.transform,
-            self._skeleton.root.transform,
-            self._skeleton.root.transform
+            self._skeleton._root.transform,
+            self._skeleton._root.transform,
+            self._skeleton._root.transform
         ]
         actual_transforms = [
-            self._skeleton.root.children[0].transform_parent,
-            self._skeleton.root.children[1].transform_parent,
-            self._skeleton.root.children[2].transform_parent
+            self._skeleton._root.children[0].transform_parent,
+            self._skeleton._root.children[1].transform_parent,
+            self._skeleton._root.children[2].transform_parent
         ]
         self.assertEqual(actual_transforms, expected_transforms)
 
     def test_add_children_parent_transform_nested(self):
-        expected_transform = self._skeleton.root.children[0].transform
-        actual_transform = self._skeleton.root.children[0].children[0].transform_parent
+        expected_transform = self._skeleton._root.children[0].transform
+        actual_transform = self._skeleton._root.children[0].children[0].transform_parent
         self.assertEqual(actual_transform, expected_transform)
 
     def test_add_children_name_end_site(self):
         name = 'End Site'
-        joint = self._skeleton.root.children[1].children[0]
+        joint = self._skeleton._root.children[1].children[0]
         self.assertEqual(joint.name, name)
 
     def test_add_children_transform_nested(self):
@@ -91,7 +91,7 @@ class TestSkeleton(TestCase):
             0, 1, 0, -3,
             0, 0, 0, 1
         )
-        actual_transform = self._skeleton.root.children[1].children[0].transform
+        actual_transform = self._skeleton._root.children[1].children[0].transform
         TestUtility().assertAlmostEqual_mat4(actual_transform, expected_transform)
 
 
@@ -122,6 +122,28 @@ class TestJoint(TestCase):
     def test_constructor_children_is_empty(self):
         joint = Joint()
         self.assertEqual(len(joint.children), 0)
+
+    def test_copy_is_equal(self):
+        parent = Joint('parent name')
+        parent.transform = mat4(
+            1, 0, 0, 1,
+            0, 1, 0, 1,
+            0, 0, 1, 0,
+            0, 0, 0, 1
+        )
+
+        child = Joint('child name')
+        child.transform_parent = mat4(parent.transform)
+        child.transform = mat4(
+            1, 0, 0, 2,
+            0, 1, 0, 0,
+            0, 0, 1, -2,
+            0, 0, 0, 1
+        )
+
+        parent.children.append(child)
+        parent_copy = Joint(parent)
+        self.assertEqual(parent_copy, parent)
 
 
 class TestSkeletonMotion(TestCase):
@@ -155,3 +177,15 @@ class TestSkeletonMotion(TestCase):
                 correct_skeleton_count += 1
 
         self.assertEqual(correct_skeleton_count, len(self._skeleton_motion.frames))
+
+    def test_frame_order_is_not_correct(self):
+        correct_skeleton_count = 0
+
+        self._skeleton_motion.frames[1] = Skeleton(self._skeleton_motion.frames[2])
+
+        for frame_number, skeleton in enumerate(self._skeleton_motion.frames):
+            test_skeleton = Skeleton(self._reader, frame_number)
+            if test_skeleton == skeleton:
+                correct_skeleton_count += 1
+
+        self.assertNotEqual(correct_skeleton_count, len(self._skeleton_motion.frames))

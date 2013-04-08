@@ -1,35 +1,40 @@
 from math import pi, sin, cos
 
 from cgkit.cgtypes import mat4
+from cgkit.bvhimport import BVHReader
 
 
 __author__ = 'Erik S Carlsten'
 
 
 class Skeleton:
-    def __init__(self, bvh_reader, frame_number):
-        self._frame_number = frame_number
-        self.root = Joint(bvh_reader.root.name)
-        self.root.transform_parent = mat4().identity()
+    def __init__(self, other=None, frame_number=None):
+        if isinstance(other, BVHReader) and isinstance(frame_number, int):
+            self._frame_number = frame_number
+            self._root = Joint(other.root.name)
+            self._root.transform_parent = mat4().identity()
 
-        translation = {
-            'x': bvh_reader.root.offset[0] + bvh_reader.root.vtpos.values[frame_number].v.x,
-            'y': bvh_reader.root.offset[1] + bvh_reader.root.vtpos.values[frame_number].v.y,
-            'z': bvh_reader.root.offset[2] + bvh_reader.root.vtpos.values[frame_number].v.z,
-        }
+            translation = {
+                'x': other.root.offset[0] + other.root.vtpos.values[frame_number].v.x,
+                'y': other.root.offset[1] + other.root.vtpos.values[frame_number].v.y,
+                'z': other.root.offset[2] + other.root.vtpos.values[frame_number].v.z,
+            }
 
-        rotation = {
-            'x': bvh_reader.root.vtx.values[frame_number].v * pi / 180,
-            'y': bvh_reader.root.vty.values[frame_number].v * pi / 180,
-            'z': bvh_reader.root.vtz.values[frame_number].v * pi / 180,
-        }
+            rotation = {
+                'x': other.root.vtx.values[frame_number].v * pi / 180,
+                'y': other.root.vty.values[frame_number].v * pi / 180,
+                'z': other.root.vtz.values[frame_number].v * pi / 180,
+            }
 
-        self.root.build_transform_matrix(translation, rotation)
+            self._root.build_transform_matrix(translation, rotation)
 
-        self.add_children(self.root, bvh_reader.root.children)
+            self.add_children(self._root, other.root.children)
+        elif isinstance(other, Skeleton):
+            self._frame_number = other._frame_number
+            self._root = Joint(other._root)
 
     def __eq__(self, other):
-        return self.root == other.root
+        return self._root == other._root
 
     def add_children(self, parent, children):
         for child in children:
@@ -57,11 +62,20 @@ class Skeleton:
 
 
 class Joint:
-    def __init__(self, name=''):
-        self.name = name
-        self.transform_parent = mat4()
-        self.transform = mat4()
+    def __init__(self, other=''):
         self.children = []
+
+        if isinstance(other, basestring):
+            self.name = other
+            self.transform_parent = mat4()
+            self.transform = mat4()
+        elif isinstance(other, Joint):
+            self.name = other.name
+            self.transform_parent = mat4(other.transform_parent)
+            self.transform = mat4(other.transform)
+
+            for child in other.children:
+                self.children.append(Joint(child))
 
     def __eq__(self, other):
         are_equal =\
