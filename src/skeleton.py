@@ -28,6 +28,9 @@ class Skeleton:
 
         self.add_children(self.root, bvh_reader.root.children)
 
+    def __eq__(self, other):
+        return self.root == other.root
+
     def add_children(self, parent, children):
         for child in children:
             new_child = Joint(child.name)
@@ -59,6 +62,13 @@ class Joint:
         self.transform_parent = mat4()
         self.transform = mat4()
         self.children = []
+
+    def __eq__(self, other):
+        are_equal =\
+            self.name == other.name and self.transform_parent == other.transform_parent and\
+            self.transform == other.transform and self.children == other.children
+
+        return are_equal
 
     def build_transform_matrix(self, translation, rotation):
         theta_x = rotation['x']
@@ -93,3 +103,13 @@ class Joint:
         translation_matrix[2, 3] = translation['z']
 
         self.transform = self.transform_parent * translation_matrix * rotation_matrix
+
+
+class SkeletonMotion:
+    def __init__(self, bvh_reader):
+        self.frame_count = bvh_reader.frames
+        self.frame_time = bvh_reader.dt
+
+        self.frames = []
+        for frame_number in range(self.frame_count):
+            self.frames.append(Skeleton(bvh_reader, frame_number))

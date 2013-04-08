@@ -2,7 +2,7 @@ from cgkit.cgtypes import mat4
 from cgkit.bvhimport import BVHReader
 from unittest import TestCase
 
-from src.skeleton import Skeleton, Joint
+from src.skeleton import Skeleton, Joint, SkeletonMotion
 from testUtility import TestUtility
 
 __author__ = 'Erik S Carlsten'
@@ -122,3 +122,36 @@ class TestJoint(TestCase):
     def test_constructor_children_is_empty(self):
         joint = Joint()
         self.assertEqual(len(joint.children), 0)
+
+
+class TestSkeletonMotion(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls._reader = BVHReader('test_bvh_data.bvh')
+        cls._reader.read()
+        cls._skeleton_motion = SkeletonMotion(cls._reader)
+
+    def test_frame_count(self):
+        self.assertEqual(self._skeleton_motion.frame_count, 4)
+
+    def test_frame_time(self):
+        self.assertEqual(self._skeleton_motion.frame_time, 1.5)
+
+    def test_each_frame_contains_skeleton(self):
+        skeleton_count = 0
+
+        for skeleton in self._skeleton_motion.frames:
+            if isinstance(skeleton, Skeleton):
+                skeleton_count += 1
+
+        self.assertEqual(skeleton_count, 4)
+
+    def test_frame_order_is_correct(self):
+        correct_skeleton_count = 0
+
+        for frame_number, skeleton in enumerate(self._skeleton_motion.frames):
+            test_skeleton = Skeleton(self._reader, frame_number)
+            if test_skeleton == skeleton:
+                correct_skeleton_count += 1
+
+        self.assertEqual(correct_skeleton_count, len(self._skeleton_motion.frames))
