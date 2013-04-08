@@ -25,20 +25,13 @@ class Skeleton:
 
         self.root.build_transform_matrix(translation, rotation)
 
-        self.root.add_children(bvh_reader.root.children, frame_number)
+        Skeleton.add_children(self.root, bvh_reader.root.children, frame_number)
 
-
-class Joint:
-    def __init__(self, name=''):
-        self.name = name
-        self.transform_parent = mat4()
-        self.transform = mat4()
-        self.children = []
-
-    def add_children(self, children, frame_number):
+    @staticmethod
+    def add_children(parent, children, frame_number):
         for child in children:
             new_child = Joint(child.name)
-            new_child.transform_parent = mat4(self.transform)
+            new_child.transform_parent = mat4(parent.transform)
 
             translation = {
                 'x': child.offset[0],
@@ -56,8 +49,16 @@ class Joint:
                 }
 
             new_child.build_transform_matrix(translation, rotation)
-            self.children.append(new_child)
-            new_child.add_children(child.children, frame_number)
+            parent.children.append(new_child)
+            Skeleton.add_children(new_child, child.children, frame_number)
+
+
+class Joint:
+    def __init__(self, name=''):
+        self.name = name
+        self.transform_parent = mat4()
+        self.transform = mat4()
+        self.children = []
 
     def build_transform_matrix(self, translation, rotation):
         theta_x = rotation['x']
