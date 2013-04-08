@@ -29,7 +29,7 @@ class Skeleton:
 
 
 class Joint:
-    def __init__(self, name):
+    def __init__(self, name=''):
         self.name = name
         self.transform_parent = mat4()
         self.transform = mat4()
