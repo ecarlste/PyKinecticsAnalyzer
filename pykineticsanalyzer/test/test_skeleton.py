@@ -5,7 +5,7 @@ from cgkit.cgtypes import mat4
 from cgkit.bvhimport import BVHReader
 
 from pykineticsanalyzer.skeleton import Skeleton, Joint, SkeletonMotion
-from testUtility import TestUtility
+from pykineticsanalyzer.test.testUtility import TestUtility
 
 
 __author__ = 'Erik S Carlsten'
