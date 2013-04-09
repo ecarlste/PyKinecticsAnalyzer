@@ -1,9 +1,12 @@
-from cgkit.cgtypes import mat4
-from cgkit.bvhimport import BVHReader
 from unittest import TestCase
 
-from src.skeleton import Skeleton, Joint, SkeletonMotion
+from cgkit.cgtypes import mat4
+
+from cgkit.bvhimport import BVHReader
+
+from pykineticsanalyzer.skeleton import Skeleton, Joint, SkeletonMotion
 from testUtility import TestUtility
+
 
 __author__ = 'Erik S Carlsten'
 
